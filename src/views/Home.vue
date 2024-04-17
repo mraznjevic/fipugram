@@ -1,22 +1,19 @@
 <template>
- <div class="row">
- <div class="col-2"></div>
- <div class="col-7">
- <instagram-card v-for="card in filteredCards"  :key="card.url" :info="card"/>
- <instagram-card />
- </div>
- <div class="col-3">
-  Sidebar 
- </div>
- </div>
+    <div class="row">
+        <div class="col-8">
+            <instagram-card v-for="card in filteredCards" :key="card.url" :info="card" />
+        </div>
+        <div class="col-4">
+            Sidebar
+        </div>
+    </div>
 </template>
-
 <script>
 // @ is an alias to /src
 import InstagramCard from '@/components/InstagramCard.vue';
- import store from '@/store'
+import store from '@/store';
 
-let cards = []
+let cards = [];
 
 cards = [
  { url: require('@/assets/images/sunset1.jpg'), description: 'evening sunset', time: 'few minutes ago...'},

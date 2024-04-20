@@ -28,7 +28,7 @@
       <!-- listanje kartica -->
       <instagram-card
         v-for="card in filteredCards"
-        :key="card.url"
+        :key="card.id"
         :info="card"
       />
     </div>
@@ -41,47 +41,56 @@ import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
 import { db } from "@/firebase";
 
-let cards = [];
-
-cards = [
-  {
-    url: require("@/assets/images/sunset1.jpg"),
-    description: "evening sunset",
-    time: "few minutes ago...",
-  },
-  {
-    url: require("@/assets/images/sunset2.jpg"),
-    description: "nature sunset",
-    time: "hour ago...",
-  },
-  {
-    url: require("@/assets/images/sunset3.jpg"),
-    description: "mountain sunset",
-    time: "few hours ago...",
-  },
-  {
-    url: require("@/assets/images/sunset4.jpg"),
-    description: "relax moments",
-    time: "9 hours ago...",
-  },
-];
+//cards = [
+// {url: require("@/assets/images/sunset1.jpg"),description: "evening sunset",time: "few minutes ago...",},
+// {url: require("@/assets/images/sunset2.jpg"),description: "nature sunset",time: "hour ago...",},
+//{url: require("@/assets/images/sunset3.jpg"),description: "mountain sunset",time: "few hours ago...",},
+// {url: require("@/assets/images/sunset4.jpg"),description: "relax moments",time: "9 hours ago...",},
+//];
 
 export default {
   name: "home",
   data: function () {
     return {
-      cards: cards,
+      cards: [],
       store: store,
       newImageUrl: "", // <-- url nove slike
       newImageDescription: "", // <-- opis nove slike
     };
   },
+  mounted() {
+    this.getPosts();
+    //
+    //
+    // dohvat iz Firebasea
+  },
+
   methods: {
+    getPosts() {
+      console.log("firebase dohvat...");
+
+      db.collection("posts")
+        .orderBy("posted_at", "desc")
+        .limit(10)
+        .get()
+        .then((query) => {
+          this.cards = [];
+          query.forEach((doc) => {
+            const data = doc.data ();
+
+            this.cards.push({
+              id: doc.id,
+              time: data.posted_at,
+              description: data.description,
+              url: data.url,
+            });
+
+          });
+        });
+    },
     postNewImage() {
       const imageUrl = this.newImageUrl;
       const imageDescription = this.newImageDescription;
-
-     
 
       db.collection("posts")
         .add({
@@ -94,6 +103,8 @@ export default {
           console.log("Spremljeno", doc);
           this.newImageDescription = "";
           this.newImageUrl = "";
+
+          this.getPosts();
         })
         .catch((e) => {
           console.error(e);

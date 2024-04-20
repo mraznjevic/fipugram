@@ -51,7 +51,7 @@ export default {
                 .then((result) => {
                     console.log('Uspješna prijava', result);
                 
-                
+                this.$router.replace({ name: 'home'});
                 })
                 .catch(function(e) {
                     console.error('Greška', e);

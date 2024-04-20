@@ -2,19 +2,36 @@
   <div id="app">
     <nav id="nav" class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">
-        <img src="@/assets/Sunset-Bar-Logo-300x212.png" width="auto" height="40" class="d-inline-block align-top" alt="" loading="lazy"/>
+        <img
+          src="@/assets/Sunset-Bar-Logo-300x212.png"
+          width="auto"
+          height="40"
+          class="d-inline-block align-top"
+          alt=""
+          loading="lazy"
+        />
         Fipugram
       </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarToggler">
-        <form id="search"  class= "navbar-form form-inline ml-auto">
-        <input v-model="store.searchTerm" 
-        class="form-control mr-sm-2" 
-        type="search"
-        placeholder="Search" 
-        aria-label="Search"/>
+        <form id="search" class="navbar-form form-inline ml-auto">
+          <input
+            v-model="store.searchTerm"
+            class="form-control mr-sm-2"
+            type="search"
+            placeholder="Search"
+            aria-label="Search"
+          />
         </form>
         <!--Image and text-->
         <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
@@ -32,68 +49,63 @@
           </li>
         </ul>
         <nav class="navbar navbar-light bg-light">
-  <form class="form-inline">
-  </form>
-</nav>
+          <form class="form-inline"></form>
+        </nav>
       </div>
     </nav>
-    <router-view/>
+    <router-view />
   </div>
 </template>
 
-
 <script>
-import store from '@/store';
-import { firebase } from '@/firebase';
-import  router  from '@/router';
-
+import store from "@/store";
+import { firebase } from "@/firebase";
+import router from "@/router";
 
 firebase.auth().onAuthStateChanged((user) => {
- const currentRoute = router.currentRoute;
- if (user) {
- // User is signed in.
- console.log('*** User', user.email);
- store.currentUser = user.email;
- // take me home
- if (!currentRoute.meta.needsAuth) {
- router.push({ name: 'home' });
- }
- } else {
- // User is not signed in.
- console.log('*** No user');
- store.currentUser = null;
- // kick me out
- if (currentRoute.meta.needsAuth) {
- router.push({ name: 'login' });
- }
- }
+  const currentRoute = router.currentRoute;
+  if (user) {
+    // User is signed in.
+    console.log("*** User", user.email);
+    store.currentUser = user.email;
+    // take me home
+    if (!currentRoute.meta.needsAuth) {
+      router.push({ name: "home" });
+    }
+  } else {
+    // User is not signed in.
+    console.log("*** No user");
+    store.currentUser = null;
+    // kick me out
+    if (currentRoute.meta.needsAuth) {
+      router.push({ name: "login" });
+    }
+  }
 });
 
 export default {
-  name: 'app',
-     data () {
-         return{
-           store: store, 
-         };
-      },
-      methods:{
-        logout(){
-          firebase
-          .auth()
-          .signOut()
-          .then (() => {
-             this.$router.push({ name: 'login'});
-          });
-        },
-      },
+  name: "app",
+  data() {
+    return {
+      store: store,
+    };
+  },
+  methods: {
+    logout() {
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          this.$router.push({ name: "login" });
+        });
+    },
+  },
 };
 </script>
 
 <style>
 /* Dodajte prilagodbe CSS-a ovdje ako je potrebno */
 </style>
-
-
 
 <style lang="scss">
 #app {

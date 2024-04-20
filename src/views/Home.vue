@@ -1,49 +1,117 @@
 <template>
-    <div class="row">
-        <div class="col-8">
-            <instagram-card v-for="card in filteredCards" :key="card.url" :info="card" />
+  <div class="row">
+    <div class="col-8">
+      <!-- nova forma za post -->
+      <form @submit.prevent="postNewImage" class="form-inline mb-5">
+        <div class="form-group">
+          <label for="imageUrl">Image URL</label>
+          <input
+            v-model="newImageUrl"
+            type="text"
+            class="form-control ml-2"
+            placeholder="Enter the image URL"
+            id="imageUrl"
+          />
         </div>
-        <div class="col-4">
-            Sidebar
+        <div class="form-group">
+          <label for="imageDescription">Description</label>
+          <input
+            v-model="newImageDescription"
+            type="text"
+            class="form-control ml-2"
+            placeholder="Enter the image description"
+            id="imageDescription"
+          />
         </div>
+        <button type="submit" class="btn btn-primary ml-2">Post image</button>
+      </form>
+      <!-- listanje kartica -->
+      <instagram-card
+        v-for="card in filteredCards"
+        :key="card.url"
+        :info="card"
+      />
     </div>
+    <div class="col-4">Sidebar</div>
+  </div>
 </template>
 <script>
 // @ is an alias to /src
-import InstagramCard from '@/components/InstagramCard.vue';
-import store from '@/store';
+import InstagramCard from "@/components/InstagramCard.vue";
+import store from "@/store";
+import { db } from "@/firebase";
 
 let cards = [];
 
 cards = [
- { url: require('@/assets/images/sunset1.jpg'), description: 'evening sunset', time: 'few minutes ago...'},
- { url: require('@/assets/images/sunset2.jpg'), description: 'nature sunset', time: 'hour ago...'},
- { url: require('@/assets/images/sunset3.jpg'), description: 'mountain sunset', time: 'few hours ago...'},
- { url: require('@/assets/images/sunset4.jpg'), description: 'relax moments', time: '9 hours ago...'},
+  {
+    url: require("@/assets/images/sunset1.jpg"),
+    description: "evening sunset",
+    time: "few minutes ago...",
+  },
+  {
+    url: require("@/assets/images/sunset2.jpg"),
+    description: "nature sunset",
+    time: "hour ago...",
+  },
+  {
+    url: require("@/assets/images/sunset3.jpg"),
+    description: "mountain sunset",
+    time: "few hours ago...",
+  },
+  {
+    url: require("@/assets/images/sunset4.jpg"),
+    description: "relax moments",
+    time: "9 hours ago...",
+  },
 ];
 
 export default {
-  name: 'home',
-  data: function(){
-    return{
-          cards:cards,
-          store:store,
+  name: "home",
+  data: function () {
+    return {
+      cards: cards,
+      store: store,
+      newImageUrl: "", // <-- url nove slike
+      newImageDescription: "", // <-- opis nove slike
     };
+  },
+  methods: {
+    postNewImage() {
+      const imageUrl = this.newImageUrl;
+      const imageDescription = this.newImageDescription;
+
+     
+
+      db.collection("posts")
+        .add({
+          url: imageUrl,
+          description: imageDescription,
+          email: store.currentUser,
+          posted_at: Date.now(),
+        })
+        .then((doc) => {
+          console.log("Spremljeno", doc);
+          this.newImageDescription = "";
+          this.newImageUrl = "";
+        })
+        .catch((e) => {
+          console.error(e);
+        });
+
+      // ovdje će ići Firebase kod
+    },
   },
 
   computed: {
     filteredCards() {
-      let termin=this.store.searchTerm;
-    return this.cards.filter(card => card.description.indexOf(termin)>=0);
+      let termin = this.store.searchTerm;
+      return this.cards.filter((card) => card.description.indexOf(termin) >= 0);
     },
   },
-
-
 
   components: {
     InstagramCard: InstagramCard,
   },
 };
 </script>
-
-  

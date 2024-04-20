@@ -2,16 +2,14 @@
   <div class="row">
     <div class="col-8">
       <!-- nova forma za post -->
-      <form @submit.prevent="postNewImage" class="form-inline mb-5">
+      <form @submit.prevent="postNewImage" class="mb-5">
         <div class="form-group">
-          <label for="imageUrl">Image URL</label>
-          <input
-            v-model="newImageUrl"
-            type="text"
-            class="form-control ml-2"
-            placeholder="Enter the image URL"
-            id="imageUrl"
-          />
+          <croppa
+            :width="400"
+            :height="400"
+            placeholder="Učitaj sliku..."
+            v-model="imageReference"
+          ></croppa>
         </div>
         <div class="form-group">
           <label for="imageDescription">Description</label>
@@ -39,7 +37,7 @@
 // @ is an alias to /src
 import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
-import { db } from "@/firebase";
+import { db, storage } from "@/firebase";
 
 //cards = [
 // {url: require("@/assets/images/sunset1.jpg"),description: "evening sunset",time: "few minutes ago...",},
@@ -56,6 +54,7 @@ export default {
       store: store,
       newImageUrl: "", // <-- url nove slike
       newImageDescription: "", // <-- opis nove slike
+      imageReference: null,
     };
   },
   mounted() {
@@ -76,7 +75,7 @@ export default {
         .then((query) => {
           this.cards = [];
           query.forEach((doc) => {
-            const data = doc.data ();
+            const data = doc.data();
 
             this.cards.push({
               id: doc.id,
@@ -84,33 +83,56 @@ export default {
               description: data.description,
               url: data.url,
             });
-
           });
         });
     },
     postNewImage() {
-      const imageUrl = this.newImageUrl;
-      const imageDescription = this.newImageDescription;
+      this.imageReference.generateBlob((blobData) => {
+        console.log(blobData);
 
-      db.collection("posts")
-        .add({
-          url: imageUrl,
-          description: imageDescription,
-          email: store.currentUser,
-          posted_at: Date.now(),
-        })
-        .then((doc) => {
-          console.log("Spremljeno", doc);
-          this.newImageDescription = "";
-          this.newImageUrl = "";
+        let imageName =
+          "posts/" + store.currentUser + "/" + Date.now() + ".png";
 
-          this.getPosts();
-        })
-        .catch((e) => {
-          console.error(e);
-        });
+        storage
+          .ref(imageName)
+          .put(blobData)
+          .then((result) => {
+            // čuva this
+            // ... uspješno spremanje
+            result.ref
+              .getDownloadURL()
+              .then((url) => {
+                // čuva this
+                console.log("Javni link", url);
 
-      // ovdje će ići Firebase kod
+                const imageDescription = this.newImageDescription;
+
+                db.collection("posts")
+                  .add({
+                    url: url,
+                    description: imageDescription,
+                    email: store.currentUser,
+                    posted_at: Date.now(),
+                  })
+                  .then((doc) => {
+                    console.log("Spremljeno", doc);
+                    this.newImageDescription = "";
+                    this.imageReference.remove();
+
+                    this.getPosts();
+                  })
+                  .catch((e) => {
+                    console.error(e);
+                  });
+              })
+              .catch((e) => {
+                console.error(e);
+              });
+          })
+          .catch((e) => {
+            console.error(e);
+          });
+      });
     },
   },
 

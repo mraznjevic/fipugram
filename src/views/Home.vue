@@ -86,53 +86,53 @@ export default {
           });
         });
     },
-    postNewImage() {
-      this.imageReference.generateBlob((blobData) => {
-        console.log(blobData);
-
-        let imageName =
-          "posts/" + store.currentUser + "/" + Date.now() + ".png";
-
-        storage
-          .ref(imageName)
-          .put(blobData)
-          .then((result) => {
-            // čuva this
-            // ... uspješno spremanje
-            result.ref
-              .getDownloadURL()
-              .then((url) => {
-                // čuva this
-                console.log("Javni link", url);
-
-                const imageDescription = this.newImageDescription;
-
-                db.collection("posts")
-                  .add({
-                    url: url,
-                    description: imageDescription,
-                    email: store.currentUser,
-                    posted_at: Date.now(),
-                  })
-                  .then((doc) => {
-                    console.log("Spremljeno", doc);
-                    this.newImageDescription = "";
-                    this.imageReference.remove();
-
-                    this.getPosts();
-                  })
-                  .catch((e) => {
-                    console.error(e);
-                  });
-              })
-              .catch((e) => {
-                console.error(e);
-              });
-          })
-          .catch((e) => {
-            console.error(e);
-          });
+    getImage() {
+      return new Promise((resolveFn, errorFn) => {
+        this.imageReference.generateBlob((data) => {
+          resolveFn(data);
+        });
       });
+    },
+
+    postNewImage() {
+      // this.imageReference.generateBlob((blobData) => {
+      this.getImage()
+        .then((data) => {
+          console.log(blobData);
+          let imageName =
+            "posts/" + store.currentUser + "/" + Date.now() + ".png";
+
+          return storage.ref(imageName).put(blobData);
+        })
+
+        .then((result) => {
+          // čuva this
+          // ... uspješno spremanje
+          return result.ref.getDownloadURL();
+        })
+        .then((url) => {
+          // čuva this
+          console.log("Javni link", url);
+
+          const imageDescription = this.newImageDescription;
+
+          return db.collection("posts").add({
+            url: url,
+            description: imageDescription,
+            email: store.currentUser,
+            posted_at: Date.now(),
+          });
+        })
+        .then((doc) => {
+          console.log("Spremljeno", doc);
+          this.newImageDescription = "";
+          this.imageReference.remove();
+
+          this.getPosts();
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     },
   },
 
